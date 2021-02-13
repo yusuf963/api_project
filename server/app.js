@@ -1,4 +1,5 @@
 import express from 'express'
+import router from './view/router.js'
 import bodyParser from 'body-parser'
 import connectToDb from './db/connectToDd.js'
 
@@ -9,8 +10,7 @@ const startServer = async () => {
   connectToDb()
   app.use(express.json())
 
-
-
+  app.use('/api', router)
 
 
 
