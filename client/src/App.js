@@ -1,18 +1,23 @@
 import React from 'react'
-import { BrowserRouter, Switch, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 
 import './styles/style.scss'
+//importng Components
+import HomePage from './components/HomePage'
 
-const App = () => (
-  <BrowserRouter>
-    <Switch>
-      <Route exact path="/project-2" component={Home}/>
-    </Switch>
-  </BrowserRouter>
-)
 
-const Home = () => {
-  return <h1>Hello world</h1>
+const App = () => {
+
+  return (
+    < Router >
+      <Switch>
+        <Route exact path="/music" component={HomePage} />
+      </Switch>
+    </Router>
+  )
+
 }
+
+
 
 export default App

@@ -5,8 +5,8 @@ const Dotenv = require('dotenv-webpack')
 const env = process.env.NODE_ENV === 'production' ? (
   new webpack.EnvironmentPlugin({ ...process.env })
 ) : (
-  new Dotenv()
-)
+    new Dotenv()
+  )
 
 module.exports = webpackEnv => {
   const publicPath = webpackEnv.NODE_ENV === 'local' ? {
@@ -34,7 +34,13 @@ module.exports = webpackEnv => {
       open: true,
       port: 8000,
       watchContentBase: true,
-      historyApiFallback: true
+      historyApiFallback: true,
+      proxy: {
+        '/api': {
+          target: 'https://localhost:80001',
+          secure: false
+        }
+      }
     },
     plugins: [
       new Dotenv(),
