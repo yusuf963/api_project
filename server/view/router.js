@@ -3,14 +3,21 @@ import controller from '../controller/user.js'
 
 
 const router = express.Router()
+// user rigesteration
+router.route('/rigester')
+  .post(controller.userRigerter)
 
-router.route('/register')
-  .post(controller.addUser)
+// user LOGIN
+router.route('/login')
+  .post(controller.userLogIn)
 
+//all songs
 router.route('/songs')
   .get(controller.getAllSongs)
+  .post(controller.postSong)
 
-router.route('/song:id')
+//one song
+router.route('/song/:id')
   .get(controller.getOneSong)
   .put(controller.replaceOneSong)
   .patch(controller.editOneSong)
