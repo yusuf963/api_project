@@ -4,12 +4,13 @@ import jwToken from 'jsonwebtoken'
 import { secret } from '../db/enviroment.js'
 
 
+
 //user rigesteration
-const userRigerter = async (req, res, next) => {
+const userRegirter = async (req, res, next) => {
   const user = req.body
   try {
     const newUser = await UserData.create(user)
-    res.status(201).send(`hi ${newUser.userName}, you successfully rigestered`)
+    res.status(201).send(`hi ${newUser.userName}, you successfully registered`)
   } catch (err) {
     res.send('something went wrong, please try again')
     console.log(err)
@@ -23,11 +24,12 @@ const userLogIn = async (req, res, next) => {
   const password = req.body.password
   try {
     const checkingUserExist = await UserData.findOne({ email: req.body.email })
+    //we are comparing two password, not to check if the user exist
     if (!checkingUserExist.validatePassword(password)) {
       return res.status(401).res.send('Unothrized')
     }
     const token = jwToken.sign(
-      { userId: checkingUserExist._id },
+      { payLoad: checkingUserExist._id },
       secret,
       { expiresIn: '24h' }
     )
@@ -37,7 +39,6 @@ const userLogIn = async (req, res, next) => {
     res.send('something wen wrong with your login')
     next(err)
   }
-
 }
 //geting all songs
 const getAllSongs = async (req, res, next) => {
@@ -110,7 +111,7 @@ const editOneSong = async (req, res, next) => {
 }
 
 export default {
-  userRigerter,
+  userRegirter,
   userLogIn,
   getAllSongs,
   postSong,
@@ -119,7 +120,3 @@ export default {
   editOneSong,
   deleteOneSong
 }
-
-// 	"email": "Tara@gmail.com",
-// 	"password": "123"
-// }
