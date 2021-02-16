@@ -24,10 +24,4 @@ schema.plugin(mongooseHidden({ defaultHidden: { password: true, email: true } })
 
 const User = mongoose.model('User', schema)
 
-const user = new User({
-  userName: 'Henry',
-  email: 'henry@gmail.com',
-  password: 'hhjhjj3643'
-})
-// user.save()
 export default User
