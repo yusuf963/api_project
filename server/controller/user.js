@@ -4,9 +4,12 @@ import jwToken from 'jsonwebtoken'
 import { secret } from '../db/enviroment.js'
 
 
-
 //user rigesteration
 const userRegirter = async (req, res, next) => {
+  // if (req.body.isAdmin) {
+  //   delete req.body.isAdmin
+  //   console.log('broken')
+  // }
   const user = req.body
   try {
     const newUser = await UserData.create(user)
@@ -20,11 +23,10 @@ const userRegirter = async (req, res, next) => {
 
 // User login
 const userLogIn = async (req, res, next) => {
-  const login = req.body
   const password = req.body.password
   try {
     const checkingUserExist = await UserData.findOne({ email: req.body.email })
-    //we are comparing two password, not to check if the user exist
+    //we are comparing two password, not to check if the user exist, is a function
     if (!checkingUserExist.validatePassword(password)) {
       return res.status(401).res.send('Unothrized')
     }
@@ -33,16 +35,20 @@ const userLogIn = async (req, res, next) => {
       secret,
       { expiresIn: '24h' }
     )
-    res.send(`welcome ${login.userName}... here is your Token ${token}`)
+    res.send(`welcome ${checkingUserExist.userName}... here is your Token ${token}`)
 
   } catch (err) {
     res.send('something wen wrong with your login')
     next(err)
   }
 }
+
+
+
+
 //geting all songs
 const getAllSongs = async (req, res, next) => {
-  const songList = await songData.find()
+  const songList = await songData.find().populate('user')
   try {
     res.send(songList)
   } catch (err) {
@@ -54,7 +60,7 @@ const getAllSongs = async (req, res, next) => {
 const getOneSong = async (req, res, next) => {
   const id = req.params.id
   try {
-    const oneSong = await songData.findById(id)
+    const oneSong = await songData.findById(id).populate('user')
     res.send(` there is the song you aske for: ${oneSong}`)
   } catch (err) {
     res.send('something went wrong')
@@ -64,32 +70,29 @@ const getOneSong = async (req, res, next) => {
 
 //post song
 const postSong = async (req, res, next) => {
-  const body = await req.body
+  const body = req.body
+  body.user = req.currentUser
+  console.log(req.currentUser)
   try {
     const newSong = await songData.create(body)
-    res.send('you successfully created a new song')
+    res.send(`you successfully created a new song, ${newSong}`)
   } catch (err) {
-    res.send('something went wrong')
+    res.send('something went wrongggggg')
     next()
   }
 }
-//replace one song
-const replaceOneSong = async (req, res, next) => {
-  const id = req.params.id
-  const body = req.body
-  try {
-    const replacedSong = await songData.findByIdAndReplace(id, body)
-    res.send(`you have replaced all the details of ${req.body.songName} song into this ${replacedSong}`)
-  } catch (err) {
-    res.send('something went wrong with replaceing all details by new details')
-    next()
-  }
-}
+
 //delete one song
 const deleteOneSong = async (req, res, next) => {
   const id = req.params.id
+  const currentUser = req.currentUser
   try {
-    const deletedSong = await songData.findByIdAndRemove(id)
+    const deletedSong = await songData.findById(id)
+    if (!currentUser.isAdmin && !currentUser._id.equals(deletedSong.user)) {
+      return res.status(401).send('Unauthorized')
+    }
+
+    await songData.findByIdAndRemove(id)
     res.send(` you are successfully deleted this song: ${deletedSong}`)
   } catch (err) {
     console.log(err)
@@ -98,14 +101,37 @@ const deleteOneSong = async (req, res, next) => {
   }
 }
 //edit one song
-const editOneSong = async (req, res, next) => {
+const updateOneSong = async (req, res, next) => {
   const id = req.params.id
   const body = req.body
   try {
-    const editedSong = await songData.findByIdAndUpdate(id, body, { new: true })
-    res.send('you successfully edited this song')
+
+    const updatedSong = await songData.findByIdAndUpdate(id, body, { new: true })
+    res.send(`you successfully edited this song${updatedSong}`)
   } catch (err) {
     res.send('something went wrong')
+    next()
+  }
+}
+
+//post comment
+const postComment = async (req, res, next) => {
+  const songid = req.params.songId
+  const comment = req.body
+  comment.user = req.currentUser
+  try {
+    const song = await songData.findById(songid)
+    console.log('your song is ', song)
+    console.log(songid)
+    console.log(req.params.songId)
+
+    if (!song) {
+      res.status(404).send('not found')
+    }
+    song.comment.push(comment)
+    const commentedOnSong = await song.save()
+    res.send(commentedOnSong)
+  } catch (err) {
     next()
   }
 }
@@ -113,10 +139,11 @@ const editOneSong = async (req, res, next) => {
 export default {
   userRegirter,
   userLogIn,
+
   getAllSongs,
   postSong,
   getOneSong,
-  replaceOneSong,
-  editOneSong,
-  deleteOneSong
+  updateOneSong,
+  deleteOneSong,
+  postComment
 }
