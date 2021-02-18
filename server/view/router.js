@@ -11,7 +11,6 @@ router.route('/register')
 router.route('/login')
   .post(controller.userLogIn)
 
-
 //all songs
 router.route('/songs')
   .get(controller.getAllSongs)
@@ -21,8 +20,19 @@ router.route('/songs')
 //one song
 router.route('/song/:id')
   .get(controller.getOneSong)
-  .put(secureRoute, controller.replaceOneSong)
-  .patch(secureRoute, controller.editOneSong)
+  .put(secureRoute, controller.updateOneSong)
   .delete(secureRoute, controller.deleteOneSong)
 
+//comment router
+router.route('/song/:songId/comment')
+  .post(secureRoute, controller.postComment)
+
 export default router
+
+
+// consta
+//{
+//   "email": "sonji@gmail.com",
+// 	"password": "111"
+// }
+//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXlMb2FkIjoiNjAyZDljNjQyZWUwMzczZWRjNDE5ZDRlIiwiaWF0IjoxNjEzNjAyMjMyLCJleHAiOjE2MTM2ODg2MzJ9.DqR_xm-C9kQZkUTwLYo0LxkiEPR2ihrUZlW9DHHEhkU
