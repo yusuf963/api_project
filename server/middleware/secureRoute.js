@@ -9,11 +9,12 @@ const secureRoute = async (req, res, next) => {
       return res.status(401).send('Unauthorized')
     }
     const token = authToken.replace('Bearer ', '')
+    // the data is the payload
     jwToken.verify(token, secret, async (err, data) => {
       if (err) {
         return res.status(401).send('Unauthorized')
       }
-      const user = await User.findById(data.useId)
+      const user = await User.findById(data.payLoad)
       if (!user) {
         return res.status(401).send('Unauthorized')
       }
@@ -21,8 +22,6 @@ const secureRoute = async (req, res, next) => {
       req.currentUser = user
       next()
     })
-
-
   } catch (err) {
     res.status(401).send({ message: 'Unauthorized' })
   }
