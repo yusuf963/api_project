@@ -2,19 +2,37 @@ import UserData from '../model/userSchema.js'
 import songData from '../model/songSchema.js'
 import jwToken from 'jsonwebtoken'
 import { secret } from '../db/enviroment.js'
+import sendgridTransport from 'nodemailer-sendgrid-transport'
+import nodeMailer from 'nodemailer'
+
+console.log(nodeMailer)
+console.log(sendgridTransport)
 
 
+const transporter = nodeMailer.createTransport(sendgridTransport({
+  auth: {
+    api_key: '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'
+  }
+}))
 //user rigesteration
 const userRegirter = async (req, res, next) => {
   // if (req.body.isAdmin) {
   //   delete req.body.isAdmin
   //   console.log('broken')
   // }
-  const user = req.body
+  const user = await req.body
   try {
     const newUser = await UserData.create(user)
-    res.status(201).send(`hi ${newUser.userName}, you successfully registered`)
+    res.send(
+      transporter.sendMail({
+        to: newUser.email,
+        from: 'mohammad963yusuf@gmail.com',
+        subject: 'welcom',
+        html: '<h1>welcome to song spirit music</h1>'
+      }))
+    // res.status(201).send(`hi ${newUser.userName}, you successfully registered`)
   } catch (err) {
+
     res.send('something went wrong, please try again')
     console.log(err)
     next()
@@ -116,23 +134,43 @@ const updateOneSong = async (req, res, next) => {
 
 //post comment
 const postComment = async (req, res, next) => {
-  const songid = req.params.songId
   const comment = req.body
+  const songid = req.params.songid
   comment.user = req.currentUser
   try {
-    const song = await songData.findById(songid)
+    const song = await songData.findById(songid).populate('comments.user')
     console.log('your song is ', song)
     console.log(songid)
-    console.log(req.params.songId)
-
+    console.log(req.params.songid)
     if (!song) {
       res.status(404).send('not found')
     }
-    song.comment.push(comment)
+    song.comments.push(comment)
     const commentedOnSong = await song.save()
     res.send(commentedOnSong)
   } catch (err) {
-    next()
+    next(err)
+  }
+}
+//update comment
+const updateComment = async (req, res, next) => {
+  const { commnetId, songId } = req.params
+  const newComment = req.body
+  const currentUser = req.currentUser
+  try {
+    const commentToUpdate = await (await songData.findById(songId)).populate('comments.user')
+    if (!commentToUpdate) {
+      return res.status(404).send({ message: 'Unauthorized' })
+    }
+    const comment = songData.comments.id(commnetId)
+    if (!comment.user.equals(currentUser._id)) {
+      return res.status(404).send({ message: 'Unauthorized' })
+    }
+    comment.set(newComment)
+    const updatedComment = await songData.save()
+    res.send(updatedComment)
+  } catch (err) {
+    next(err)
   }
 }
 
@@ -145,5 +183,8 @@ export default {
   getOneSong,
   updateOneSong,
   deleteOneSong,
-  postComment
+
+  postComment,
+  updateComment
 }
+// 2 your frontend linking to watch
