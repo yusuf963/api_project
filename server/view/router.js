@@ -24,8 +24,10 @@ router.route('/song/:id')
   .delete(secureRoute, controller.deleteOneSong)
 
 //comment router
-router.route('/song/:songId/comment')
+router.route('/song/:songid/comment')
   .post(secureRoute, controller.postComment)
+router.route('/song/:songid/comment/:commentId')
+  .put(secureRoute, controller.updateComment)
 
 export default router
 
