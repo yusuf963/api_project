@@ -17,10 +17,11 @@ const songSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.ObjectId, ref: 'User', require: true },
   comments: [commentSchema]
 }, {
-  timeStamp: true
+  timestamp: true
 })
 const Song = mongoose.model('Song', songSchema)
 
-commentSchema.plugin(uniqueValidator)
+console.log(songSchema)
+songSchema.plugin(uniqueValidator)
 export default Song
 
